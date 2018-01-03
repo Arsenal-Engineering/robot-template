@@ -10,7 +10,6 @@ public class DriveSubsystem extends Subsystem {
 
     private Spark leftMotorController = new Spark(8);
     private Spark rightMotorController = new Spark(9);
-    private RobotDrive robotDrive = new RobotDrive(leftMotorController, rightMotorController);
 
     @Override
     protected void initDefaultCommand() {
@@ -18,6 +17,34 @@ public class DriveSubsystem extends Subsystem {
     }
 
     public void driveMotors(double x, double y) {
-        robotDrive.arcadeDrive(y, x);
+        // Square the inputs (while preserving the sign) to increase fine control
+        // while permitting full power.
+        y = Math.copySign(y * y, y);
+        x = Math.copySign(x * x, x);
+
+        double maxInput = Math.copySign(Math.max(Math.abs(y), Math.abs(x)), y);
+
+        // If we're moving forward, we must be in the 1st or 2nd quadrant
+        if (y >= 0.0) {
+            // If we're turning right (or moving forward with no turning), we're in the 1st quadrant
+            // Otherwise, we're in the second quadrant
+            if (x >= 0.0) {
+                leftMotorController.set(maxInput);
+                rightMotorController.set(y - x);
+            } else {
+                leftMotorController.set(y + x);
+                rightMotorController.set(maxInput);
+            }
+        } else {
+            // If we're turning right (or moving forward with no turning, we're in the 3rd quadrant
+            // Otherwise, we're in the fourth quadrant
+            if (x >= 0.0) {
+                leftMotorController.set(y + x);
+                rightMotorController.set(maxInput);
+            } else {
+                leftMotorController.set(maxInput);
+                rightMotorController.set(y - x);
+            }
+        }
     }
 }
