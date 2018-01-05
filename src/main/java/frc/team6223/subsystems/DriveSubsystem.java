@@ -16,34 +16,35 @@ public class DriveSubsystem extends Subsystem {
 
     }
 
-    public void driveMotors(double x, double y) {
+    public void driveMotors(double moveValue, double rotateValue) {
+
         // Square the inputs (while preserving the sign) to increase fine control
         // while permitting full power.
-        y = Math.copySign(y * y, y);
-        x = Math.copySign(x * x, x);
+        moveValue = Math.copySign(moveValue * moveValue, moveValue);
+        rotateValue = Math.copySign(rotateValue * rotateValue, rotateValue);
 
-        double maxInput = Math.copySign(Math.max(Math.abs(y), Math.abs(x)), y);
+        double maxInput = Math.copySign(Math.max(Math.abs(moveValue), Math.abs(rotateValue)), moveValue);
 
         // If we're moving forward, we must be in the 1st or 2nd quadrant
-        if (y >= 0.0) {
+        if (moveValue >= 0.0) {
             // If we're turning right (or moving forward with no turning), we're in the 1st quadrant
             // Otherwise, we're in the second quadrant
-            if (x >= 0.0) {
+            if (rotateValue >= 0.0) {
                 leftMotorController.set(maxInput);
-                rightMotorController.set(y - x);
+                rightMotorController.set(moveValue - rotateValue);
             } else {
-                leftMotorController.set(y + x);
+                leftMotorController.set(moveValue + rotateValue);
                 rightMotorController.set(maxInput);
             }
         } else {
             // If we're turning right (or moving forward with no turning, we're in the 3rd quadrant
             // Otherwise, we're in the fourth quadrant
-            if (x >= 0.0) {
-                leftMotorController.set(y + x);
+            if (rotateValue >= 0.0) {
+                leftMotorController.set(moveValue + rotateValue);
                 rightMotorController.set(maxInput);
             } else {
                 leftMotorController.set(maxInput);
-                rightMotorController.set(y - x);
+                rightMotorController.set(moveValue - rotateValue);
             }
         }
     }
